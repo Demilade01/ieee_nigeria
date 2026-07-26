@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lokoja Flood Operations &mdash; Situational Dashboard</title>
+<meta name="description" content="Flood disaster management dashboard for Lokoja, Kogi State: pre-flood reference imagery, rainfall forecast, flood extent, road access, and field volunteer status, stepped frame-by-frame via Refresh." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============================================================ -->
+  <!-- HEADER / TELEMETRY STRIP                                       -->
+  <!-- ============================================================ -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">&#9673;</span>
+      <div class="brand-text">
+        <h1>Flood Operations &mdash; Lokoja</h1>
+        <p class="brand-sub">River Niger &amp; Benue confluence &middot; Kogi State, Nigeria</p>
+      </div>
+    </div>
+
+    <dl class="telemetry" id="telemetry" aria-label="Live situation summary">
+      <div class="telemetry-item">
+        <dt>Active volunteers</dt>
+        <dd id="tm-volunteers">&mdash;</dd>
+      </div>
+      <div class="telemetry-item" id="tm-alerts-item">
+        <dt>Alerts (red)</dt>
+        <dd id="tm-alerts">&mdash;</dd>
+      </div>
+      <div class="telemetry-item">
+        <dt>This hour</dt>
+        <dd id="tm-peak-rain">&mdash;</dd>
+      </div>
+      <div class="telemetry-item">
+        <dt>Cumulative rain</dt>
+        <dd id="tm-flood-area">&mdash;</dd>
+      </div>
+      <div class="telemetry-item">
+        <dt>Frame</dt>
+        <dd id="tm-sync">&mdash;</dd>
+      </div>
+    </dl>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- MAIN LAYOUT                                                   -->
+  <!-- ============================================================ -->
+  <main class="layout">
+
+    <!-- ---------------- SIDEBAR ---------------- -->
+    <aside class="sidebar">
+
+      <section class="panel" aria-labelledby="ref-map-title">
+        <div class="panel-head">
+          <h2 id="ref-map-title">Pre-flood reference</h2>
+          <span class="tag tag-source">NIGCOMSAT</span>
+        </div>
+        <div class="frame-viewport frame-viewport-small">
+          <img id="refMapImg" src="images/ref-map/01.png" alt="Pre-flood satellite reference view of Lokoja" />
+        </div>
+        <p class="panel-note" id="ref-caption">Baseline imagery captured before onset of flooding, for visual comparison against current conditions on the main map.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="precip-title">
+        <div class="panel-head">
+          <h2 id="precip-title">Rainfall over AOI</h2>
+          <span class="tag tag-source">ECMWF</span>
+        </div>
+        <div class="frame-viewport frame-viewport-small">
+          <img id="precipImg" src="images/precip/01.png" alt="Hourly precipitation intensity over the area of interest" />
+        </div>
+        <p class="panel-note" id="precip-summary">Frame 1 of 8.</p>
+      </section>
+
+    </aside>
+
+    <!-- ---------------- MAIN MAP ---------------- -->
+    <section class="main-map-section" aria-labelledby="main-map-title">
+      <div class="panel-head main-map-head">
+        <h2 id="main-map-title">Live operations map</h2>
+        <div class="tag-group">
+          <span class="tag tag-source">Roads: OpenStreetMap</span>
+          <span class="tag tag-source">Flood extent: Sentinel</span>
+          <span class="tag tag-source">Field status: NEMA</span>
+        </div>
+      </div>
+      <div class="frame-viewport frame-viewport-main">
+        <img id="mainMapImg" src="images/main-map/01.png" alt="Main operations map showing road network, flood extent, and field volunteer status points" />
+        <div class="frame-caption" id="main-caption">Day 0, 06:00 &mdash; Baseline</div>
+        <button id="refreshBtn" class="refresh-btn" type="button" aria-label="Refresh to next frame">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- FOOTER / LEGEND                                               -->
+  <!-- ============================================================ -->
+  <footer class="app-footer">
+    <div class="legend">
+      <span class="legend-item"><span class="swatch swatch-good"></span> Good &mdash; area/route accessible, volunteer safe</span>
+      <span class="legend-item"><span class="swatch swatch-bad"></span> Bad &mdash; area cut off / assistance needed</span>
+      <span class="legend-item"><span class="swatch swatch-flood"></span> Modelled flood extent</span>
+    </div>
+    <p class="disclaimer">
+      Demo build. Panel imagery is a pre-rendered illustrative sequence (not a live map/live tile feed) &mdash;
+      press <b>Refresh</b> to step through it. Coordinates and locality names are real; rainfall, flood-extent,
+      and volunteer-status content are illustrative placeholder data pending live NIGCOMSAT / ECMWF / Sentinel /
+      NEMA feeds &mdash; see <code>README.md</code> for integration notes and for regenerating this image
+      sequence from <code>generate_frames.py</code>.
+    </p>
+  </footer>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
