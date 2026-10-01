@@ -5,6 +5,21 @@
    ========================================================== */
 
 /* ----------------------------------------------------------
+   UTILITY: Human-readable date
+   ---------------------------------------------------------- */
+function formatDate(isoString) {
+  if (!isoString) return '—';
+  try {
+    const d = new Date(isoString);
+    const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return `${date} · ${time.toUpperCase()}`;
+  } catch (_) {
+    return isoString;
+  }
+}
+
+/* ----------------------------------------------------------
    FLOOD EVENT DEFINITIONS
    ---------------------------------------------------------- */
 const FLOOD_EVENTS = [
@@ -156,7 +171,7 @@ fetch('data/volunteer_points.geojson')
             <div class="lf-popup-row"><b>ID:</b> ${p.id}</div>
             <div class="lf-popup-row"><b>Status:</b> ${statusLabel}</div>
             <div class="lf-popup-row lf-popup-note">${p.note}</div>
-            <div class="lf-popup-time">${p.reported}</div>
+            <div class="lf-popup-time">🕐 Reported: ${formatDate(p.reported)}</div>
           </div>
         `, { maxWidth: 240 });
       },
@@ -246,27 +261,79 @@ const loadPromises = FLOOD_EVENTS.map((event, idx) =>
 );
 
 /* ----------------------------------------------------------
+   SMOOTH FADE TRANSITION BETWEEN LAYERS
+   ---------------------------------------------------------- */
+let _transitionRaf = null;
+const FADE_DURATION = 350; // ms
+
+function animateLayerOpacity(layer, fromFill, toFill, fromStroke, toStroke, duration, onDone) {
+  if (!layer) { if (onDone) onDone(); return; }
+  const start = performance.now();
+  if (_transitionRaf) cancelAnimationFrame(_transitionRaf);
+
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    // Ease in-out cubic
+    const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const fill   = fromFill   + (toFill   - fromFill)   * eased;
+    const stroke = fromStroke + (toStroke - fromStroke) * eased;
+    layer.setStyle({ fillOpacity: fill, opacity: stroke });
+    if (t < 1) {
+      _transitionRaf = requestAnimationFrame(step);
+    } else {
+      _transitionRaf = null;
+      if (onDone) onDone();
+    }
+  }
+  _transitionRaf = requestAnimationFrame(step);
+}
+
+/* ----------------------------------------------------------
    SHOW / HIDE LAYERS + UPDATE TELEMETRY
    ---------------------------------------------------------- */
 function showEvent(idx) {
-  // Hide all layers
-  floodLayers.forEach(layer => {
-    if (layer && map.hasLayer(layer)) map.removeLayer(layer);
-  });
+  const event      = FLOOD_EVENTS[idx];
+  const targetFill = event.fillOpacity;
 
-  // Show selected
-  const layer = floodLayers[idx];
-  if (layer) {
-    layer.addTo(map);
-    // Fit map to this layer's bounds
-    try {
-      const bounds = layer.getBounds();
-      if (bounds.isValid()) map.fitBounds(bounds, { padding: [30, 30] });
-    } catch (_) { /* ignore */ }
+  // Layers currently on map (excluding the target)
+  const visible = floodLayers.filter((l, i) => l && map.hasLayer(l) && i !== idx);
+
+  function bringInNewLayer() {
+    // Remove fully-faded layers
+    visible.forEach(l => { if (map.hasLayer(l)) map.removeLayer(l); });
+
+    const layer = floodLayers[idx];
+    if (layer) {
+      layer.setStyle({ fillOpacity: 0, opacity: 0 });
+      if (!map.hasLayer(layer)) layer.addTo(map);
+
+      // Smooth pan to new bounds
+      try {
+        const bounds = layer.getBounds();
+        if (bounds.isValid()) map.flyToBounds(bounds, { padding: [30, 30], duration: 0.6 });
+      } catch (_) { /* ignore */ }
+
+      // Fade in
+      animateLayerOpacity(layer, 0, targetFill, 0, 0.9, FADE_DURATION, null);
+    }
   }
 
-  const event = FLOOD_EVENTS[idx];
+  if (visible.length === 0) {
+    bringInNewLayer();
+  } else {
+    let done = 0;
+    visible.forEach(l => {
+      const curFill   = l.options?.fillOpacity ?? 0.45;
+      const curStroke = l.options?.opacity     ?? 0.9;
+      animateLayerOpacity(l, curFill, 0, curStroke, 0, FADE_DURATION, () => {
+        done++;
+        if (done === visible.length) bringInNewLayer();
+      });
+    });
+  }
+
   currentEventIndex = idx;
+
 
   // Update timeline label
   els.activeLabel.textContent = event.date;

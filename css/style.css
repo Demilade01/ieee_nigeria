@@ -382,6 +382,21 @@ code {
   cursor: pointer;
   accent-color: var(--amber);
   height: 4px;
+  transition: opacity 0.2s ease;
+}
+
+.timeline-slider:active {
+  opacity: 0.85;
+}
+
+/* Pulse the thumb when dragging — webkit */
+.timeline-slider:active::-webkit-slider-thumb {
+  animation: thumb-pulse 0.4s ease;
+}
+@keyframes thumb-pulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.5); box-shadow: 0 0 0 6px rgba(242,169,59,0.25); }
+  100% { transform: scale(1); }
 }
 
 .timeline-slider:focus-visible {
