@@ -111,17 +111,25 @@
       <!-- Leaflet map container -->
       <div id="map" role="application" aria-label="Interactive flood operations map"></div>
 
-      <!-- Timeline slider -->
+      <!-- Event stepper (Refresh button) -->
       <div class="timeline-bar">
         <div class="timeline-header">
-          <span class="timeline-label-text">Flood event timeline &mdash; 2025</span>
+          <span class="timeline-label-text">Flood event &mdash; 2025</span>
           <span class="timeline-active-label" id="timeline-active-label">April 21, 2025</span>
         </div>
-        <div class="timeline-slider-wrap">
-          <span class="timeline-tick">Apr 21</span>
-          <input type="range" id="timeline-slider" class="timeline-slider" min="0" max="2" step="1" value="0" aria-label="Select flood event" />
-          <span class="timeline-tick">Jul 15</span>
-          <span class="timeline-tick">Nov 2</span>
+        <div class="event-stepper">
+          <button id="eventRefreshBtn" class="refresh-btn-sidebar timeline-refresh-btn" type="button" aria-label="Advance to next flood event">
+            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+              <path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+            Next event
+          </button>
+          <div class="event-dots" id="event-dots" aria-hidden="true">
+            <span class="event-dot is-active"></span>
+            <span class="event-dot"></span>
+            <span class="event-dot"></span>
+          </div>
+          <span class="event-step-hint">Click or press <b>R</b> &mdash; Apr 21 &rarr; Jul 15 &rarr; Nov 2</span>
         </div>
       </div>
 

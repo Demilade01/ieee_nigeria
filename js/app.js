@@ -64,7 +64,8 @@ const els = {
   precipSummary:  document.getElementById('precip-summary'),
   refCaption:     document.getElementById('ref-caption'),
   refreshBtn:     document.getElementById('refreshBtn'),
-  slider:         document.getElementById('timeline-slider'),
+  eventRefreshBtn: document.getElementById('eventRefreshBtn'),
+  eventDots:      document.querySelectorAll('#event-dots .event-dot'),
   activeLabel:    document.getElementById('timeline-active-label'),
   tmVolunteers:   document.getElementById('tm-volunteers'),
   tmAlerts:       document.getElementById('tm-alerts'),
@@ -345,27 +346,35 @@ function showEvent(idx) {
   els.tmPeakRain.textContent   = event.date;
   els.tmFloodArea.textContent  = event._areaKm2 ? `${event._areaKm2} km²` : '…';
   els.tmSync.textContent       = event.severity;
+
+  // Update event-stepper dots
+  els.eventDots.forEach((dot, i) => dot.classList.toggle('is-active', i === idx));
 }
 
 /* ----------------------------------------------------------
-   TIMELINE SLIDER
+   EVENT STEPPER (Refresh button replaces the old slider)
    ---------------------------------------------------------- */
-els.slider.addEventListener('input', e => {
-  const idx = parseInt(e.target.value, 10);
-  showEvent(idx);
-});
+function advanceEvent() {
+  const next = (currentEventIndex + 1) % FLOOD_EVENTS.length;
+  showEvent(next);
+  // Spin feedback on the button icon (reuses sidebar animation)
+  els.eventRefreshBtn.classList.remove('spinning-sidebar');
+  void els.eventRefreshBtn.offsetWidth;
+  els.eventRefreshBtn.classList.add('spinning-sidebar');
+}
 
-// Keyboard shortcut: left/right arrow keys to move slider
+els.eventRefreshBtn.addEventListener('click', advanceEvent);
+
+// Keyboard shortcuts: R (or arrow keys) step through flood events
 document.addEventListener('keydown', e => {
   if (e.target instanceof HTMLInputElement) return;
+  const key = e.key.toLowerCase();
   if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-    const next = Math.min(currentEventIndex + 1, FLOOD_EVENTS.length - 1);
-    els.slider.value = next;
-    showEvent(next);
+    showEvent(Math.min(currentEventIndex + 1, FLOOD_EVENTS.length - 1));
   } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-    const prev = Math.max(currentEventIndex - 1, 0);
-    els.slider.value = prev;
-    showEvent(prev);
+    showEvent(Math.max(currentEventIndex - 1, 0));
+  } else if (key === 'r') {
+    advanceEvent();
   }
 });
 
