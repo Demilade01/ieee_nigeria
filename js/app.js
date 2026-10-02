@@ -119,6 +119,36 @@ fetch('data/manifest.json')
   .catch(err => console.error('Failed to load manifest.json:', err));
 
 /* ----------------------------------------------------------
+   BUILDING FOOTPRINTS OVERLAY (OSM — corrected, ASTL)
+   ---------------------------------------------------------- */
+fetch('building.geojson')
+  .then(r => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  })
+  .then(data => {
+    L.geoJSON(data, {
+      style: {
+        color:       '#6b7280',
+        weight:      0.6,
+        opacity:     0.5,
+        fillColor:   '#9ca3af',
+        fillOpacity: 0.15,
+      },
+      onEachFeature: (feature, layer) => {
+        const name = feature.properties?.name;
+        if (name) {
+          layer.bindPopup(
+            `<div class="lf-popup"><div class="lf-popup-title">${name}</div></div>`,
+            { maxWidth: 180 }
+          );
+        }
+      },
+    }).addTo(map);
+  })
+  .catch(err => console.warn('Could not load building.geojson:', err));
+
+/* ----------------------------------------------------------
    LEAFLET MAP SETUP
    ---------------------------------------------------------- */
 const LOKOJA_CENTER = [7.795, 6.733];
